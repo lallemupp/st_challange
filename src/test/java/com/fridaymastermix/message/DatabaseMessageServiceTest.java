@@ -60,7 +60,7 @@ public class DatabaseMessageServiceTest {
 
     @Test
     public void messagesWrittenBy() {
-        uut.messagesWrittenBy("lalle");
+        uut.writtenBy("lalle");
         verify(messageDao).messagesWrittenBy("lalle");
     }
 
@@ -68,7 +68,7 @@ public class DatabaseMessageServiceTest {
     public void messagesWrittenByNoMatch() {
         when(messageDao.messagesWrittenBy("lalle")).thenReturn(List.of());
 
-        var result = uut.messagesWrittenBy("lalle");
+        var result = uut.writtenBy("lalle");
         var expected = List.of();
 
         assertEquals(expected, result);
@@ -97,8 +97,7 @@ public class DatabaseMessageServiceTest {
     @Test(expected = MessageNotFoundException.class)
     public void updateNonExistingMessage() throws MessageNotFoundException {
         var message = new Message("an id", "this is a test", 0, 1);
-        when(messageDao.update(message.getId(), message.getMessage())).
-                thenThrow(new MessageNotFoundException("DANGER !!!!!! TERROR HORROR"));
+        doThrow(new MessageNotFoundException("DANGER !!!!!! TERROR HORROR")).when(messageDao).update(message.getId(), message.getMessage());
 
         uut.update(message, "lalle");
         fail("MessageNotFoundException was not thrown");

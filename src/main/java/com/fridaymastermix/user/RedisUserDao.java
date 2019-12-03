@@ -17,41 +17,62 @@
 
 package com.fridaymastermix.user;
 
-import redis.clients.jedis.Jedis;
+import com.fridaymastermix.database.RedisFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+@Component
+@Qualifier("redis")
 public class RedisUserDao implements UserDao {
 
-    private static String USERS_KEY = "users";
-
-    private static int LIST_START = 0;
-    private static int LIST_END = -1;
+    private static String USERS_PREFIX = "users";
+    private static String USER_PREFIX = "user";
 
     private static String USER_NICK_KEY = "nick";
     private static String USER_PASSWORD_KEY = "password";
 
-    Jedis redis;
+    @Autowired
+    RedisFactory redisFactory;
+
+    @Override
+    public void add(User user) throws NonUniqueUserException {
+        try (var redis = redisFactory.redis()) {
+            var userKey = String.format("%s:%s", USER_PREFIX, user.getUserName());
+
+            if (redis.exists(userKey)) {
+                var errorMessage = String.format("A user with nick %s already exist", user.getUserName());
+                throw new NonUniqueUserException(errorMessage);
+            }
+
+            redis.hmset(userKey, Map.of(USER_NICK_KEY, user.getUserName(), USER_PASSWORD_KEY, user.getPassword()));
+
+            var usersKey = String.format("%s:%s", USERS_PREFIX, "all");
+            redis.lpush(usersKey, user.getUserName());
+        }
+    }
 
     @Override
     public List<User> all() {
-        var userKeys = redis.lrange(USERS_KEY, LIST_START, LIST_END);
-        return userKeys.stream().map(this::userHash).collect(Collectors.toList());
+        try (var redis = redisFactory.redis()) {
+            var userKeys = redis.lrange(String.format("%s:%s", USERS_PREFIX, "all"), 0, -1);
+            return userKeys.stream().map(this::get).filter(user -> user != User.NONEXISTING).collect(Collectors.toList());
+        }
     }
 
     @Override
     public User get(String user) {
-        var hash = redis.hgetAll(user);
-        if (!hash.isEmpty()) {
-            return new User(hash.get("nick"), hash.get("password"));
-        } else {
-            return User.NONEXISTING;
+        try (var redis = redisFactory.redis()) {
+            var hash = redis.hgetAll(String.format("%s:%s", USER_PREFIX, user));
+            if (!hash.isEmpty()) {
+                return new User(hash.get("nick"), hash.get("password"));
+            } else {
+                return User.NONEXISTING;
+            }
         }
-    }
-
-    private User userHash(String hashKey) {
-        var hash = redis.hgetAll(hashKey);
-        return new User(hash.get(USER_NICK_KEY), hash.get(USER_PASSWORD_KEY));
     }
 }

@@ -18,11 +18,16 @@
 package com.fridaymastermix.message;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
+@Qualifier("database")
 public class DatabaseMessageService implements MessageService {
     @Autowired
+    @Qualifier("redis")
     MessageDao messageDao;
 
     @Override
@@ -31,7 +36,7 @@ public class DatabaseMessageService implements MessageService {
     }
 
     @Override
-    public List<Message> messagesWrittenBy(String user) {
+    public List<Message> writtenBy(String user) {
         return messageDao.messagesWrittenBy(user);
     }
 
@@ -45,9 +50,12 @@ public class DatabaseMessageService implements MessageService {
         return messageDao.add(message, user);
     }
 
-    // TODO: update updated field.
     @Override
-    public String update(Message message, String user) throws MessageNotFoundException {
-        return messageDao.update(message.getId(), message.getMessage());
+    public void update(Message message, String user) throws MessageNotFoundException {
+        messageDao.update(message.getId(), message.getMessage());
+    }
+
+    public boolean delete(String message, String forUser) {
+        return messageDao.delete(message, forUser);
     }
 }

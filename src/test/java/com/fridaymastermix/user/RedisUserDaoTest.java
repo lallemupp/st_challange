@@ -17,6 +17,7 @@
 
 package com.fridaymastermix.user;
 
+import com.fridaymastermix.database.RedisFactory;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -28,6 +29,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -37,13 +39,17 @@ public class RedisUserDaoTest {
 
     private RedisUserDao redisUserDao;
     private Jedis jedis;
+    private RedisFactory factory;
     private static final List<String> users = List.of("lalle", "kalle", "falle");
 
     @Before
     public void setup() {
         redisUserDao = new RedisUserDao();
         jedis = mock(Jedis.class);
-        redisUserDao.redis = jedis;
+        factory = mock(RedisFactory.class);
+        redisUserDao.redisFactory = factory;
+
+        when(factory.redis()).thenReturn(jedis);
     }
 
     @After
@@ -53,24 +59,41 @@ public class RedisUserDaoTest {
     }
 
     @Test
-    public void all() {
-        when(jedis.lrange("users", 0, -1)).thenReturn(users);
+    public void create() throws NonUniqueUserException {
+        when(jedis.exists("user:lalle")).thenReturn(false);
 
-        when(jedis.hgetAll("lalle")).thenReturn(Map.of("nick", "lalle", "password", "password"));
-        when(jedis.hgetAll("kalle")).thenReturn(Map.of("nick", "kalle", "password", "password"));
-        when(jedis.hgetAll("falle")).thenReturn(Map.of("nick", "falle", "password", "password"));
+        redisUserDao.add(new User("lalle", "password"));
+
+        verify(jedis).hmset("user:lalle", Map.of("nick", "lalle", "password", "password"));
+        verify(jedis).lpush("users:all", "lalle");
+    }
+
+    @Test(expected = NonUniqueUserException.class)
+    public void createWithExistingUser() throws NonUniqueUserException {
+        when(jedis.exists("user:lalle")).thenReturn(true);
+
+        redisUserDao.add(new User("lalle", "password"));
+        fail();
+    }
+
+    @Test
+    public void all() {
+        when(jedis.lrange("users:all", 0, -1)).thenReturn(users);
+
+        when(jedis.hgetAll("user:lalle")).thenReturn(Map.of("nick", "lalle", "password", "password"));
+        when(jedis.hgetAll("user:kalle")).thenReturn(Map.of("nick", "kalle", "password", "password"));
+        when(jedis.hgetAll("user:falle")).thenReturn(Map.of("nick", "falle", "password", "password"));
 
         var expected = users.stream().map(name -> new User(name, "password")).toArray(User[]::new);
 
         var result = redisUserDao.all();
 
         assertThat(result, CoreMatchers.hasItems(expected));
-        users.forEach(user -> verify(jedis).hgetAll(user));
     }
 
     @Test
     public void allNoUsers() {
-        when(jedis.lrange("users", 0, -1)).thenReturn(List.of());
+        when(jedis.lrange("users:all", 0, -1)).thenReturn(List.of());
         var result = redisUserDao.all();
         assertEquals(0, result.size());
         verify(jedis, never()).hgetAll("lalle");
@@ -78,7 +101,7 @@ public class RedisUserDaoTest {
 
     @Test
     public void get() {
-        when(jedis.hgetAll("lalle")).thenReturn(Map.of("nick", "lalle", "password", "pass1"));
+        when(jedis.hgetAll("user:lalle")).thenReturn(Map.of("nick", "lalle", "password", "pass1"));
 
         var expected = new User("lalle", "pass1");
         var result = redisUserDao.get("lalle");

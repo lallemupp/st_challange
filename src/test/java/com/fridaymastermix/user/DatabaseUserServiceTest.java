@@ -39,7 +39,7 @@ public class DatabaseUserServiceTest {
         messageService = mock(MessageService.class);
 
         uut.users = userDao;
-        uut.messageService = messageService;
+        uut.messages = messageService;
     }
 
     @After
@@ -59,11 +59,5 @@ public class DatabaseUserServiceTest {
     public void describe() {
         uut.describe("lalle");
         verify(userDao).get("lalle");
-    }
-
-    @Test
-    public void messagesWrittenBy() {
-        uut.messagesWrittenBy("lalle");
-        verify(messageService).messagesWrittenBy("lalle");
     }
 }

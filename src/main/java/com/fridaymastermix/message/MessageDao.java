@@ -24,5 +24,6 @@ public interface MessageDao {
     List<Message> messagesWrittenBy(String user);
     List<Message> all();
     String add(String message, String user);
-    String update(String id, String message) throws MessageNotFoundException;
+    void update(String id, String message) throws MessageNotFoundException;
+    boolean delete(String message, String forUser);
 }

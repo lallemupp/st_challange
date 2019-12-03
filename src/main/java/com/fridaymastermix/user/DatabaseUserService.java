@@ -17,20 +17,28 @@
 
 package com.fridaymastermix.user;
 
-import com.fridaymastermix.message.Message;
 import com.fridaymastermix.message.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Qualifier("database")
 public class DatabaseUserService implements UserService {
 
     @Autowired
+    @Qualifier("redis")
     UserDao users;
+
     @Autowired
-    MessageService messageService;
+    @Qualifier("database")
+    MessageService messages;
+
+    public void create(User user) throws NonUniqueUserException {
+        users.add(user);
+    }
 
     public List<User> all() {
         return users.all();
@@ -39,10 +47,5 @@ public class DatabaseUserService implements UserService {
     @Override
     public User describe(String user) {
         return users.get(user);
-    }
-
-    @Override
-    public List<Message> messagesWrittenBy(String user) {
-        return messageService.messagesWrittenBy(user);
     }
 }

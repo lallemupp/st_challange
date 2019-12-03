@@ -17,12 +17,10 @@
 
 package com.fridaymastermix.user;
 
-import com.fridaymastermix.message.Message;
-
 import java.util.List;
 
 public interface UserService {
+    void create(User user) throws NonUniqueUserException;
     List<User> all();
     User describe(String user);
-    List<Message> messagesWrittenBy(String user);
 }

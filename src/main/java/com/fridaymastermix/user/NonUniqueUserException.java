@@ -15,10 +15,12 @@
  *
  */
 
-package com.fridaymastermix.message;
+package com.fridaymastermix.user;
 
-public class MessageNotFoundException extends Exception {
-    public MessageNotFoundException(String message) {
-        super(message);
+public class NonUniqueUserException extends Exception {
+    private String message;
+
+    public NonUniqueUserException(String message) {
+        this.message = message;
     }
 }

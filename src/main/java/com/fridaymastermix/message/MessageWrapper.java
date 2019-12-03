@@ -17,8 +17,16 @@
 
 package com.fridaymastermix.message;
 
-public class MessageNotFoundException extends Exception {
-    public MessageNotFoundException(String message) {
-        super(message);
+import java.util.List;
+
+public class MessageWrapper {
+    private List<Message> messages;
+
+    public MessageWrapper(List<Message> messages) {
+        this.messages = messages;
+    }
+
+    public List<Message> getMessages() {
+        return messages;
     }
 }

@@ -15,10 +15,18 @@
  *
  */
 
-package com.fridaymastermix.message;
+package com.fridaymastermix.user;
 
-public class MessageNotFoundException extends Exception {
-    public MessageNotFoundException(String message) {
-        super(message);
+import java.util.List;
+
+public class UserWrapper {
+    private List<User> users;
+
+    public UserWrapper(List<User> users) {
+        this.users = users;
+    }
+
+    public List<User> getUsers() {
+        return users;
     }
 }

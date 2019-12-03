@@ -21,8 +21,9 @@ import java.util.List;
 
 public interface MessageService {
     Message describe(String messageWithId);
-    List<Message> messagesWrittenBy(String user);
+    List<Message> writtenBy(String user);
     List<Message> all();
     String create(String message, String user);
-    String update(Message message, String user) throws MessageNotFoundException;
+    void update(Message message, String user) throws MessageNotFoundException;
+    boolean delete(String message, String forUser);
 }

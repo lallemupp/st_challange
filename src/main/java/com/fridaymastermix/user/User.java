@@ -17,25 +17,29 @@
 
 package com.fridaymastermix.user;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class User {
-    private String nick;
+import javax.validation.constraints.NotBlank;
 
+public class User {
     static User NONEXISTING = new User("NO", "USER");
 
-    @JsonIgnore
-    private String passwordHash;
+    @NotBlank
+    private String userName;
 
-    public User(String nick, String passwordHash) {
-        this.nick = nick;
-        this.passwordHash = passwordHash;
+    @NotBlank
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String password;
+
+    public User(String userName, String password) {
+        this.userName = userName;
+        this.password = password;
     }
 
     public String toString() {
-        return String.format("%s:%s", nick, "*".repeat(passwordHash.length()));
+        return String.format("%s:%s", userName, "*".repeat(password.length()));
     }
 
     @Override
@@ -47,24 +51,24 @@ public class User {
         User user = (User) o;
 
         return new EqualsBuilder()
-                .append(nick, user.nick)
-                .append(passwordHash, user.passwordHash)
+                .append(userName, user.userName)
+                .append(password, user.password)
                 .isEquals();
     }
 
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
-                .append(nick)
-                .append(passwordHash)
+                .append(userName)
+                .append(password)
                 .toHashCode();
     }
 
-    public String getNick() {
-        return nick;
+    public String getUserName() {
+        return userName;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    public String getPassword() {
+        return password;
     }
 }
