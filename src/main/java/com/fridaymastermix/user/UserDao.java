@@ -20,6 +20,7 @@ package com.fridaymastermix.user;
 import java.util.List;
 
 public interface UserDao {
+    void add(User user) throws NonUniqueUserException;
     List<User> all();
     User get(String user);
 }

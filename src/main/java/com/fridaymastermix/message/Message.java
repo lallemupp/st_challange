@@ -17,8 +17,11 @@
 
 package com.fridaymastermix.message;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import javax.validation.constraints.NotBlank;
 
 public class Message {
     public static final Message NONEXISTING = new Message(
@@ -32,11 +35,18 @@ public class Message {
             0,
             0);
 
-    private String id;
+    @NotBlank
     private String message;
+
+    private String id;
     private long created;
     private long updated;
 
+    public Message(String id, String message) {
+        this(id, message, System.currentTimeMillis() / 1000, System.currentTimeMillis() / 1000);
+    }
+
+    @JsonCreator
     public Message(String id, String message, long created, long updated) {
         this.id = id;
         this.message = message;

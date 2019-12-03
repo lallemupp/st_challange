@@ -15,10 +15,15 @@
  *
  */
 
-package com.fridaymastermix.message;
+package com.fridaymastermix.database;
 
-public class MessageNotFoundException extends Exception {
-    public MessageNotFoundException(String message) {
-        super(message);
+import org.springframework.stereotype.Component;
+import redis.clients.jedis.Jedis;
+
+@Component
+public class RedisFactory {
+
+    public Jedis redis() {
+        return new Jedis();
     }
 }

@@ -17,9 +17,12 @@
 
 package com.fridaymastermix.message;
 
+import com.fridaymastermix.database.RedisFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
 import redis.clients.jedis.Jedis;
 
 import java.util.HashMap;
@@ -28,11 +31,14 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
@@ -50,13 +56,16 @@ public class RedisMessageDaoTest {
 
     private RedisMessageDao uut;
     private Jedis redis;
+    private RedisFactory factory;
 
     @Before
     public void setup() {
         uut = new RedisMessageDao();
         redis = mock(Jedis.class);
+        factory = mock(RedisFactory.class);
 
-        uut.redis = redis;
+        uut.redisFactory = factory;
+        when(factory.redis()).thenReturn(redis);
     }
 
     @After
@@ -141,9 +150,9 @@ public class RedisMessageDaoTest {
     @Test
     public void messagesWrittenBy() {
         when(redis.lrange("user:lalle:messages", 0, -1)).thenReturn(List.of(
-                "message:message_id",
-                "message:message_id_2",
-                "message:message_id_3"));
+                "message_id",
+                "message_id_2",
+                "message_id_3"));
 
         when(redis.hgetAll("message:message_id")).thenReturn(MESSAGE_HASH);
         when(redis.hgetAll("message:message_id_2")).thenReturn(MESSAGE_HASH);
@@ -168,10 +177,10 @@ public class RedisMessageDaoTest {
 
     @Test
     public void all() {
-        when(redis.lrange("message:all", 0, -1)).thenReturn(List.of(
-                "message:message_id",
-                "message:message_id_2",
-                "message:message_id_3"));
+        when(redis.lrange("messages:all", 0, -1)).thenReturn(List.of(
+                "message_id",
+                "message_id_2",
+                "message_id_3"));
 
         when(redis.hgetAll("message:message_id")).thenReturn(MESSAGE_HASH);
         when(redis.hgetAll("message:message_id_2")).thenReturn(MESSAGE_HASH);
@@ -186,7 +195,7 @@ public class RedisMessageDaoTest {
 
     @Test
     public void allNoMessages() {
-        when(redis.lrange("message:all", 0, -1)).thenReturn(List.of());
+        when(redis.lrange("messages:all", 0, -1)).thenReturn(List.of());
 
         var expected = 0;
         var result = uut.all();
@@ -201,23 +210,64 @@ public class RedisMessageDaoTest {
 
         verify(redis).hset(anyString(), anyMap());
         verify(redis).lpush(eq("user:lalle:messages"), anyString());
+        verify(redis).lpush(eq("messages:all"), anyString());
     }
 
     @Test
     public void update() throws MessageNotFoundException {
         when(redis.hgetAll("message:message_id")).thenReturn(MESSAGE_HASH);
 
-        var result = uut.update("message_id", "this is a new message");
-        var expected = MESSAGE_HASH.get("id");
-        assertEquals(expected, result);
-
+        uut.update("message_id", "this is a new message");
         verify(redis).hmset("message:message_id", Map.of("message", "this is a new message"));
+        verify(redis).hmset(eq("message:message_id"), argThat(new UpdatedMapMatcher()));
     }
 
     @Test(expected = MessageNotFoundException.class)
     public void updateItemNotFound() throws MessageNotFoundException {
         when(redis.hgetAll("user:lalle:message_id")).thenReturn(Map.of());
+
         uut.update("user:lalle:message_id", "this is a message");
         fail("MessageNotFoundException was not thrown");
+    }
+
+    @Test
+    public void delete() {
+        when(redis.del("message:message_id")).thenReturn(1L);
+        when(redis.lrem("user:lalle:messages", 1, "message_id")).thenReturn(1L);
+        when(redis.lrem("users:all", 1, "message_id")).thenReturn(1L);
+
+        var result = uut.delete("message_id", "lalle");
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void deleteWithMissingEntry() {
+        when(redis.del("message:message_id")).thenReturn(1L);
+        when(redis.lrem("user:lalle:messages", 1, "message_id")).thenReturn(0L);
+        when(redis.lrem("users:all", 1, "message_id")).thenReturn(0L);
+
+        var result = uut.delete("message_id", "lalle");
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void deleteWithMissingItem() {
+        when(redis.del("message:message_id")).thenReturn(0L);
+        when(redis.lrem("user:lalle:messages", 1, "message_id")).thenReturn(0L);
+        when(redis.lrem("users:all", 1, "message_id")).thenReturn(0L);
+
+        var result = uut.delete("message_id", "lalle");
+
+        assertFalse(result);
+    }
+
+    private static class UpdatedMapMatcher implements ArgumentMatcher<Map<String, String>> {
+
+        @Override
+        public boolean matches(Map<String, String> argument) {
+            return argument.containsKey("updated");
+        }
     }
 }

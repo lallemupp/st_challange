@@ -17,8 +17,22 @@
 
 package com.fridaymastermix.message;
 
-public class MessageNotFoundException extends Exception {
-    public MessageNotFoundException(String message) {
-        super(message);
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping(value = "messages", produces = MediaType.APPLICATION_JSON_VALUE)
+public class MessageController {
+
+    @Autowired
+    MessageService messages;
+
+    @GetMapping()
+    public MessageWrapper getMessages() {
+        var messageList = messages.all();
+        return new MessageWrapper(messageList);
     }
 }
