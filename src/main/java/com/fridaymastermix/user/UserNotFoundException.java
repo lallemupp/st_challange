@@ -15,17 +15,10 @@
  *
  */
 
-package com.fridaymastermix.message;
+package com.fridaymastermix.user;
 
-import com.fridaymastermix.user.UserNotFoundException;
-
-import java.util.List;
-
-public interface MessageService {
-    Message describe(String messageWithId);
-    List<Message> writtenBy(String user);
-    List<Message> all();
-    String create(String message, String user) throws UserNotFoundException;
-    void update(Message message) throws MessageNotFoundException;
-    boolean delete(String message, String forUser);
+public class UserNotFoundException extends Exception {
+    public UserNotFoundException(String message) {
+        super(message);
+    }
 }

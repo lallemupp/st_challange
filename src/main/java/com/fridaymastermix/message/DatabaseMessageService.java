@@ -17,6 +17,9 @@
 
 package com.fridaymastermix.message;
 
+import com.fridaymastermix.user.User;
+import com.fridaymastermix.user.UserDao;
+import com.fridaymastermix.user.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -29,6 +32,10 @@ public class DatabaseMessageService implements MessageService {
     @Autowired
     @Qualifier("redis")
     MessageDao messageDao;
+
+    @Autowired
+    @Qualifier("redis")
+    UserDao userDao;
 
     @Override
     public Message describe(String messageId) {
@@ -46,16 +53,24 @@ public class DatabaseMessageService implements MessageService {
     }
 
     @Override
-    public String create(String message, String user) {
-        return messageDao.add(message, user);
+    public String create(String message, String user) throws UserNotFoundException {
+        if (userDao.get(user) != User.NONEXISTING) {
+            return messageDao.add(message, user);
+        } else {
+            throw new UserNotFoundException(String.format("user %s was not found. Message will not be created", user));
+        }
     }
 
     @Override
-    public void update(Message message, String user) throws MessageNotFoundException {
+    public void update(Message message) throws MessageNotFoundException {
         messageDao.update(message.getId(), message.getMessage());
     }
 
     public boolean delete(String message, String forUser) {
-        return messageDao.delete(message, forUser);
+        if (messageDao.exists(message, forUser)) {
+            return messageDao.delete(message, forUser);
+        } else {
+            return false;
+        }
     }
 }

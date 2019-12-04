@@ -27,9 +27,11 @@ public class Message {
     public static final Message NONEXISTING = new Message(
             "NOT_AN_EXISTING_ID",
             "NONEXISTING",
+            "NONEXISTING",
             0,
             0);
     public static final Message ERROR = new Message(
+            "ERROR",
             "ERROR",
             "ERROR",
             0,
@@ -39,17 +41,19 @@ public class Message {
     private String message;
 
     private String id;
+    private String createdBy;
     private long created;
     private long updated;
 
     public Message(String id, String message) {
-        this(id, message, System.currentTimeMillis() / 1000, System.currentTimeMillis() / 1000);
+        this(id, message, null, System.currentTimeMillis() / 1000, System.currentTimeMillis() / 1000);
     }
 
     @JsonCreator
-    public Message(String id, String message, long created, long updated) {
+    public Message(String id, String message, String createdBy, long created, long updated) {
         this.id = id;
         this.message = message;
+        this.createdBy = createdBy;
         this.created = created;
         this.updated = updated;
     }
@@ -60,6 +64,10 @@ public class Message {
 
     public String getMessage() {
         return message;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
     }
 
     public long getCreated() {
@@ -86,13 +94,14 @@ public class Message {
 
         if (o == null || getClass() != o.getClass()) return false;
 
-        Message message1 = (Message) o;
+        Message m = (Message) o;
 
         return new EqualsBuilder()
-                .append(created, message1.created)
-                .append(updated, message1.updated)
-                .append(id, message1.id)
-                .append(message, message1.message)
+                .append(created, m.created)
+                .append(updated, m.updated)
+                .append(id, m.id)
+                .append(createdBy, m.createdBy)
+                .append(message, m.message)
                 .isEquals();
     }
 
@@ -101,6 +110,7 @@ public class Message {
         return new HashCodeBuilder(17, 37)
                 .append(id)
                 .append(message)
+                .append(createdBy)
                 .append(created)
                 .append(updated)
                 .toHashCode();

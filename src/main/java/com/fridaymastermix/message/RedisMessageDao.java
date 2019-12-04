@@ -34,7 +34,7 @@ public class RedisMessageDao implements MessageDao {
     private static final String PREFIX_MESSAGES = "messages";
     private static final String PREFIX_MESSAGE = "message";
     private static final String PREFIX_USER = "user";
-    private static final String[] MESSAGE_KEYS = {"id", "message", "created", "updated"};
+    private static final String[] MESSAGE_KEYS = {"id", "message", "createdBy", "created", "updated"};
 
     @Autowired
     RedisFactory redisFactory;
@@ -67,8 +67,16 @@ public class RedisMessageDao implements MessageDao {
             return new Message(
                     hash.get("id"),
                     hash.get("message"),
+                    hash.get("createdBy"),
                     Integer.parseInt(hash.get("created")),
                     Integer.parseInt(hash.get("updated")));
+        }
+    }
+
+    public boolean exists(String message, String user) {
+        try (var redis = redisFactory.redis()) {
+            var key = String.format("%s:%s:%s", PREFIX_USER, user, PREFIX_MESSAGES);
+            return redis.sismember(key, message);
         }
     }
 
@@ -83,7 +91,7 @@ public class RedisMessageDao implements MessageDao {
     public List<Message> messagesWrittenBy(String user) {
         try (var redis = redisFactory.redis()) {
             String key = String.format("%s:%s:%s", PREFIX_USER, user, PREFIX_MESSAGES);
-            var messageKeys = redis.lrange(key, 0, -1);
+            var messageKeys = redis.smembers(key);
             return messageKeys.parallelStream().
                     map(this::get).
                     filter(this::invalidMessage).
@@ -98,7 +106,7 @@ public class RedisMessageDao implements MessageDao {
     @Override
     public List<Message> all() {
         try (var redis = redisFactory.redis()) {
-            var keys = redis.lrange(String.format("%s:all", PREFIX_MESSAGES), 0, -1);
+            var keys = redis.smembers(String.format("%s:all", PREFIX_MESSAGES));
             return keys.parallelStream().
                     map(this::get).
                     filter(this::invalidMessage).
@@ -116,11 +124,12 @@ public class RedisMessageDao implements MessageDao {
             Map<String, String> messageHash = Map.of(
                     "id", id,
                     "message", message,
+                    "createdBy", user,
                     "created", now,
                     "updated", now);
             redis.hset(String.format("%s:%s", PREFIX_MESSAGE, id), messageHash);
-            redis.lpush(String.format("%s:%s:%s", PREFIX_USER, user, PREFIX_MESSAGES), id);
-            redis.lpush(String.format("%s:%s", PREFIX_MESSAGES, "all"), id);
+            redis.sadd(String.format("%s:%s:%s", PREFIX_USER, user, PREFIX_MESSAGES), id);
+            redis.sadd(String.format("%s:%s", PREFIX_MESSAGES, "all"), id);
             return id;
         }
     }
@@ -152,10 +161,10 @@ public class RedisMessageDao implements MessageDao {
             var numberOfDeletedKeys = redis.del(messageKey);
 
             var userMessagesKey = String.format("%s:%s:%s", PREFIX_USER, forUser, PREFIX_MESSAGES);
-            var numberOfDeletedUserEntries = redis.lrem(userMessagesKey, 1, message);
+            var numberOfDeletedUserEntries = redis.srem(userMessagesKey, message);
 
             var allMessagesKey = String.format("%s:%s", PREFIX_MESSAGE, "all");
-            var numberOfDeletedEntries = redis.lrem(allMessagesKey, 1, message);
+            var numberOfDeletedEntries = redis.srem(allMessagesKey, message);
 
             return (numberOfDeletedKeys + numberOfDeletedUserEntries + numberOfDeletedEntries) > 0;
         }

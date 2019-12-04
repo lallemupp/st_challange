@@ -21,6 +21,7 @@ import java.util.List;
 
 public interface MessageDao {
     Message get(String id);
+    boolean exists(String message, String forUser);
     List<Message> messagesWrittenBy(String user);
     List<Message> all();
     String add(String message, String user);
