@@ -17,10 +17,23 @@
 
 package com.fridaymastermix.user;
 
-public class NonUniqueUserException extends Exception {
+/**
+ * Exception used to signal that the user already exists.
+ */
+public class UserAlreadyExistsException extends Exception {
     private String message;
 
-    public NonUniqueUserException(String message) {
+    /**
+     * Constructor.
+     *
+     * @param message the error message.
+     */
+    public UserAlreadyExistsException(String message) {
         this.message = message;
+    }
+
+    @Override
+    public String getMessage() {
+        return message;
     }
 }

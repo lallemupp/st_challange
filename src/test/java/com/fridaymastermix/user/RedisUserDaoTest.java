@@ -59,7 +59,7 @@ public class RedisUserDaoTest {
     }
 
     @Test
-    public void create() throws NonUniqueUserException {
+    public void create() throws UserAlreadyExistsException {
         when(jedis.exists("user:lalle")).thenReturn(false);
 
         redisUserDao.add(new User("lalle", "password"));
@@ -68,8 +68,8 @@ public class RedisUserDaoTest {
         verify(jedis).lpush("users:all", "lalle");
     }
 
-    @Test(expected = NonUniqueUserException.class)
-    public void createWithExistingUser() throws NonUniqueUserException {
+    @Test(expected = UserAlreadyExistsException.class)
+    public void createWithExistingUser() throws UserAlreadyExistsException {
         when(jedis.exists("user:lalle")).thenReturn(true);
 
         redisUserDao.add(new User("lalle", "password"));

@@ -23,6 +23,9 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import javax.validation.constraints.NotBlank;
 
+/**
+ * Domain class for messages.
+ */
 public class Message {
     public static final Message NONEXISTING = new Message(
             "NOT_AN_EXISTING_ID",

@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * An implementation of the {@link UserDao} that users redis to store the data.
+ */
 @Component
 @Qualifier("redis")
 public class RedisUserDao implements UserDao {
@@ -39,14 +42,17 @@ public class RedisUserDao implements UserDao {
     @Autowired
     RedisFactory redisFactory;
 
+    /**
+     * @inheritDoc
+     */
     @Override
-    public void add(User user) throws NonUniqueUserException {
+    public void add(User user) throws UserAlreadyExistsException {
         try (var redis = redisFactory.redis()) {
             var userKey = String.format("%s:%s", USER_PREFIX, user.getUserName());
 
             if (redis.exists(userKey)) {
                 var errorMessage = String.format("A user with nick %s already exist", user.getUserName());
-                throw new NonUniqueUserException(errorMessage);
+                throw new UserAlreadyExistsException(errorMessage);
             }
 
             redis.hmset(userKey, Map.of(USER_NICK_KEY, user.getUserName(), USER_PASSWORD_KEY, user.getPassword()));
@@ -56,6 +62,9 @@ public class RedisUserDao implements UserDao {
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public List<User> all() {
         try (var redis = redisFactory.redis()) {
@@ -64,6 +73,9 @@ public class RedisUserDao implements UserDao {
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public User get(String user) {
         try (var redis = redisFactory.redis()) {

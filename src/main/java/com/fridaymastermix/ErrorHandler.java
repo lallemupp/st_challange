@@ -27,6 +27,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.stream.Collectors;
 
+/**
+ * Handles exceptions thrown by controllers and turn them in to error messages.
+ */
 @RestControllerAdvice
 public class ErrorHandler {
 

@@ -28,6 +28,9 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+/**
+ * An implementation fo the {@link MessageDao} that uses redis to store the data.
+ */
 @Component
 @Qualifier("redis")
 public class RedisMessageDao implements MessageDao {
@@ -39,6 +42,9 @@ public class RedisMessageDao implements MessageDao {
     @Autowired
     RedisFactory redisFactory;
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public Message get(String id) {
         try (var redis = redisFactory.redis()) {
@@ -48,6 +54,9 @@ public class RedisMessageDao implements MessageDao {
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     private boolean notValid(Map<String, String> hash) {
         for (var key: MESSAGE_KEYS) {
             if (!hash.containsKey(key)) {
@@ -58,6 +67,9 @@ public class RedisMessageDao implements MessageDao {
         return false;
     }
 
+    /**
+     * @inheritDoc
+     */
     private Message toMessage(Map<String, String> hash) {
         if (hash.isEmpty()) {
             return Message.NONEXISTING;
@@ -81,11 +93,7 @@ public class RedisMessageDao implements MessageDao {
     }
 
     /**
-     * Gets all messages written by a user.
-     * This should probably be paged.
-     *
-     * @param user the id of the user to get the messages for.
-     * @return the messages.
+     * @inheritDoc
      */
     @Override
     public List<Message> messagesWrittenBy(String user) {
@@ -99,10 +107,16 @@ public class RedisMessageDao implements MessageDao {
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     private boolean invalidMessage(Message message) {
         return ((message != Message.NONEXISTING) && (message != Message.ERROR));
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public List<Message> all() {
         try (var redis = redisFactory.redis()) {
@@ -114,6 +128,9 @@ public class RedisMessageDao implements MessageDao {
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public String add(String message, String user) {
         try (var redis = redisFactory.redis()) {
@@ -140,6 +157,9 @@ public class RedisMessageDao implements MessageDao {
         return Long.toString(epoch);
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public void update(String id, String message) throws MessageNotFoundException {
         try (var redis = redisFactory.redis()) {
@@ -155,6 +175,10 @@ public class RedisMessageDao implements MessageDao {
         }
     }
 
+    /**
+     * @inheritDoc
+     */
+    @Override
     public boolean delete(String message, String forUser) {
         try (var redis = redisFactory.redis()) {
             String messageKey = String.format("%s:%s", PREFIX_MESSAGE, message);

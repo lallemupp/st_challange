@@ -25,28 +25,22 @@ import org.junit.Test;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class DatabaseUserServiceTest {
+public class UserServiceTest {
 
-    private DatabaseUserService uut;
-    private MessageService messageService;
+    private UserService uut;
     private UserDao userDao;
 
     @Before
     public void setup() {
-        uut = new DatabaseUserService();
-
+        uut = new UserService();
         userDao = mock(UserDao.class);
-        messageService = mock(MessageService.class);
-
         uut.users = userDao;
-        uut.messages = messageService;
     }
 
     @After
     public void teardown() {
         uut = null;
         userDao = null;
-        messageService = null;
     }
 
     @Test

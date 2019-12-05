@@ -21,13 +21,12 @@ import com.fridaymastermix.database.RedisFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import redis.clients.jedis.Jedis;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertEquals;
@@ -51,6 +50,7 @@ public class RedisMessageDaoTest {
     private static final Map<String, String> MESSAGE_HASH = Map.of(
             "id", "message_id",
             "message", "this is a message",
+            "createdBy", "lalle",
             "created", "1",
             "updated", "1");
 
@@ -72,13 +72,14 @@ public class RedisMessageDaoTest {
     public void teardown() {
         uut = null;
         redis = null;
+        factory = null;
     }
 
     @Test
     public void get() {
         when(redis.hgetAll("message:message_id")).thenReturn(MESSAGE_HASH);
         var result = uut.get("message_id");
-        var expected = new Message("message_id", "this is a message", 1, 1);
+        var expected = new Message("message_id", "this is a message", "lalle", 1, 1);
 
         assertEquals(expected, result);
         verify(redis).hgetAll("message:message_id");
@@ -149,7 +150,7 @@ public class RedisMessageDaoTest {
 
     @Test
     public void messagesWrittenBy() {
-        when(redis.lrange("user:lalle:messages", 0, -1)).thenReturn(List.of(
+        when(redis.smembers("user:lalle:messages")).thenReturn(Set.of(
                 "message_id",
                 "message_id_2",
                 "message_id_3"));
@@ -158,7 +159,7 @@ public class RedisMessageDaoTest {
         when(redis.hgetAll("message:message_id_2")).thenReturn(MESSAGE_HASH);
         when(redis.hgetAll("message:message_id_3")).thenReturn(MESSAGE_HASH);
 
-        var message = new Message("message_id", "this is a message", 1, 1);
+        var message = new Message("message_id", "this is a message", "lalle", 1, 1);
 
         Message[] expected = {message, message, message};
 
@@ -177,7 +178,7 @@ public class RedisMessageDaoTest {
 
     @Test
     public void all() {
-        when(redis.lrange("messages:all", 0, -1)).thenReturn(List.of(
+        when(redis.smembers("messages:all")).thenReturn(Set.of(
                 "message_id",
                 "message_id_2",
                 "message_id_3"));
@@ -186,7 +187,7 @@ public class RedisMessageDaoTest {
         when(redis.hgetAll("message:message_id_2")).thenReturn(MESSAGE_HASH);
         when(redis.hgetAll("message:message_id_3")).thenReturn(MESSAGE_HASH);
 
-        var message = new Message("message_id", "this is a message", 1, 1);
+        var message = new Message("message_id", "this is a message", "lalle", 1, 1);
         Message[] expected = {message, message, message};
 
         var result = uut.all();
@@ -209,8 +210,8 @@ public class RedisMessageDaoTest {
         assertNotNull(result);
 
         verify(redis).hset(anyString(), anyMap());
-        verify(redis).lpush(eq("user:lalle:messages"), anyString());
-        verify(redis).lpush(eq("messages:all"), anyString());
+        verify(redis).sadd(eq("user:lalle:messages"), anyString());
+        verify(redis).sadd(eq("messages:all"), anyString());
     }
 
     @Test

@@ -35,6 +35,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * Class that handles user requests.
+ */
 @RestController
 @RequestMapping(value = "users", produces = MediaType.APPLICATION_JSON_VALUE)
 @SuppressWarnings("UnusedReturnValue")
@@ -42,12 +45,24 @@ public class UserController {
     @Autowired
     UserService users;
 
+    /**
+     * Handles requests for listing all users.
+     *
+     * @return a list of all users.
+     */
     @GetMapping
     public UserWrapper listUsers() {
         var userList = users.all();
         return new UserWrapper(userList);
     }
 
+    /**
+     * Handles requests to create a user.
+     *
+     * @param user the user name.
+     * @param request the servlet request used to extract request information.
+     * @return a response entity that contains information about the response or error.
+     */
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseBody> postUser(@RequestBody @Validated User user, HttpServletRequest request) {
         var requestUri = request.getRequestURI();
@@ -59,7 +74,7 @@ public class UserController {
 
         try {
             users.create(user);
-        } catch (NonUniqueUserException e) {
+        } catch (UserAlreadyExistsException e) {
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             var status = HttpStatus.SEE_OTHER;
@@ -73,6 +88,12 @@ public class UserController {
         return new ResponseEntity<>(new ResponseBody(status.value(), message), headers, status);
     }
 
+    /**
+     * Handles GET requests for users.
+     * @param user the user to get.
+     *
+     * @return The user or an error.
+     */
     @GetMapping("{user}")
     public User getUser(@PathVariable String user) {
         var description = users.describe(user);

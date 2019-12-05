@@ -18,7 +18,6 @@
 package com.fridaymastermix.message;
 
 import com.fridaymastermix.ResponseBody;
-import com.fridaymastermix.user.UserNotFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -41,6 +40,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+/**
+ * Handles requests for messages.
+ */
 @RestController
 @RequestMapping(value = "messages", produces = MediaType.APPLICATION_JSON_VALUE)
 public class MessageController {
@@ -48,6 +50,12 @@ public class MessageController {
     @Autowired
     MessageService messages;
 
+    /**
+     * Returns a list of all messages or a list of messages for a provided user.
+     * @param user the user. Optional.
+     *
+     * @return a list of messages.
+     */
     @GetMapping
     public MessageWrapper getMessages(@RequestParam(value = "user", required = false) String user) {
         List<Message> messageList;
@@ -61,7 +69,14 @@ public class MessageController {
         return new MessageWrapper(messageList);
     }
 
-    // TODO: Felhantering och validering av input.
+    /**
+     * Handles POST requests for messages.
+     *
+     * @param message the message to create.
+     * @param user the user to create the message for.
+     * @param request the servlet request used for creating the location header.
+     * @return a response entity that contains information about the created message or an error.
+     */
     @PostMapping
     public ResponseEntity<ResponseBody> postMessages(@RequestBody @Validated Message message, @RequestParam String user,  HttpServletRequest request) {
         var requestUri = request.getRequestURI();
@@ -86,6 +101,12 @@ public class MessageController {
         }
     }
 
+    /**
+     * Handles GET requests for messages.
+     *
+     * @param message the id of the message to GET.
+     * @return the message or an error.
+     */
     @GetMapping("{message}")
     public Message getMessage(@PathVariable String message) {
         var toReturn = messages.describe(message);
@@ -98,6 +119,14 @@ public class MessageController {
         return messages.describe(message);
     }
 
+    /**
+     * Handles PUT requests for messages.
+     *
+     * @param messageId the id of the message to update.
+     * @param message the message to update to.
+     * @param request the request used to create a path in the error response.
+     * @return a response entity that contains the information about the response or error.
+     */
     @PutMapping("{message}")
     public ResponseEntity<ResponseBody> putMessage(@PathVariable("message") String messageId,
                                                    @RequestBody Message message,
@@ -123,6 +152,13 @@ public class MessageController {
         return new ResponseEntity<>(new ResponseBody(statusCode.value(), responseMessage), statusCode);
     }
 
+    /**
+     * Handle delete requests for messages.
+     *
+     * @param message the id of the message to delete.
+     * @param forUser the user to delete the message for.
+     * @return a response entity that contains information about the result of the delete.
+     */
     @DeleteMapping(value = "{message}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseBody> deleteMessage(@PathVariable String message, @RequestParam("user") String forUser) {
         boolean success = messages.delete(message, forUser);

@@ -21,6 +21,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+/**
+ * Domain class used to create response bodies.
+ */
 public class ResponseBody {
     private String timestamp;
     private int status;

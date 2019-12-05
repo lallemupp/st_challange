@@ -17,8 +17,16 @@
 
 package com.fridaymastermix.message;
 
+/**
+ * An exception that signals that a message could not be found.
+ */
 public class MessageNotFoundException extends Exception {
-    public MessageNotFoundException(String message) {
-        super(message);
+
+    /**
+     * Creates an exception.
+     * @param errorMessage the error errorMessage.
+     */
+    public MessageNotFoundException(String errorMessage) {
+        super(errorMessage);
     }
 }

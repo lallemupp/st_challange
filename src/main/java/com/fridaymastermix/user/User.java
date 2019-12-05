@@ -23,6 +23,9 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import javax.validation.constraints.NotBlank;
 
+/**
+ * Data class for users.
+ */
 public class User {
     public static User NONEXISTING = new User("NO", "USER");
 

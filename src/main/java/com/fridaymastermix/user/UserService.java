@@ -17,10 +17,48 @@
 
 package com.fridaymastermix.user;
 
+import com.fridaymastermix.message.MessageService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 
-public interface UserService {
-    void create(User user) throws NonUniqueUserException;
-    List<User> all();
-    User describe(String user);
+/**
+ * A service that coordinates requests for users.
+ */
+@Service
+@Qualifier("database")
+public class UserService {
+
+    @Autowired
+    @Qualifier("redis")
+    UserDao users;
+
+    /**
+     * Tells the Data Access Object to create a user.
+     *
+     * @param user the user.
+     * @throws UserAlreadyExistsException if the user already exists.
+     */
+    public void create(User user) throws UserAlreadyExistsException {
+        users.add(user);
+    }
+
+    /**
+     * Asks the Data Access Object for all users.
+     * @return a list of all users.
+     */
+    public List<User> all() {
+        return users.all();
+    }
+
+    /**
+     * Asks the Data Access Object for the user.
+     * @param user the user.
+     * @return the user.
+     */
+    public User describe(String user) {
+        return users.get(user);
+    }
 }

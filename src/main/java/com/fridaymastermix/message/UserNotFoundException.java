@@ -15,9 +15,16 @@
  *
  */
 
-package com.fridaymastermix.user;
+package com.fridaymastermix.message;
 
+/**
+ * An exception that signals that the user could not be found.
+ */
 public class UserNotFoundException extends Exception {
+    /**
+     * Constructor.
+     * @param message the error message.
+     */
     public UserNotFoundException(String message) {
         super(message);
     }
