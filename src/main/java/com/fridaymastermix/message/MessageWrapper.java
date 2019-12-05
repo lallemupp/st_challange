@@ -19,13 +19,27 @@ package com.fridaymastermix.message;
 
 import java.util.List;
 
+/**
+ * A class used to wrap message lists in JSON responses.
+ */
 public class MessageWrapper {
+
     private List<Message> messages;
 
+    /**
+     * Constructor.
+     *
+     * @param messages the list of messages to wrapp.
+     */
     public MessageWrapper(List<Message> messages) {
         this.messages = messages;
     }
 
+    /**
+     * Returns the list of messages.
+     *
+     * @return the list of messages.
+     */
     public List<Message> getMessages() {
         return messages;
     }

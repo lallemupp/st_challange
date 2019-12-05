@@ -17,6 +17,7 @@
 
 package com.fridaymastermix.message;
 
+import com.fridaymastermix.user.UserDao;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,17 +27,20 @@ import java.util.List;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-public class DatabaseMessageServiceTest {
+public class MessageServiceTest {
 
-    private DatabaseMessageService uut;
+    private MessageService uut;
     private MessageDao messageDao;
+    private UserDao userDao;
 
     @Before
     public void setup() {
-        uut = new DatabaseMessageService();
+        uut = new MessageService();
         messageDao = mock(MessageDao.class);
+        userDao = mock(UserDao.class);
 
         uut.messageDao = messageDao;
+        uut.userDao = userDao;
     }
 
     @After
@@ -82,24 +86,24 @@ public class DatabaseMessageServiceTest {
     }
 
     @Test
-    public void create() {
+    public void create() throws UserNotFoundException {
         uut.create("this is a message", "lalle");
         verify(messageDao).add("this is a message", "lalle");
     }
 
     @Test
     public void update() throws MessageNotFoundException {
-        var message = new Message("an id", "this is a test", 0, 1);
-        uut.update(message, "lalle");
+        var message = new Message("an id", "this is a test", "lalle", 0, 1);
+        uut.update(message);
         verify(messageDao).update(message.getId(), message.getMessage());
     }
 
     @Test(expected = MessageNotFoundException.class)
     public void updateNonExistingMessage() throws MessageNotFoundException {
-        var message = new Message("an id", "this is a test", 0, 1);
+        var message = new Message("an id", "this is a test", "lalle", 0, 1);
         doThrow(new MessageNotFoundException("DANGER !!!!!! TERROR HORROR")).when(messageDao).update(message.getId(), message.getMessage());
 
-        uut.update(message, "lalle");
+        uut.update(message);
         fail("MessageNotFoundException was not thrown");
     }
 }

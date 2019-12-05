@@ -10,7 +10,9 @@
     {
       "name": "messages",
       "path": "/messages",
-      "methods": ["GET"],
+      "methods": ["GET", "POST"],
+      "filters": ["user"],
+      "consumes": "application/json",
       "produces": "application/json"
     }
   ]

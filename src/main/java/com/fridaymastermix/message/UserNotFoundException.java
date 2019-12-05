@@ -15,12 +15,17 @@
  *
  */
 
-package com.fridaymastermix.user;
+package com.fridaymastermix.message;
 
-public class NonUniqueUserException extends Exception {
-    private String message;
-
-    public NonUniqueUserException(String message) {
-        this.message = message;
+/**
+ * An exception that signals that the user could not be found.
+ */
+public class UserNotFoundException extends Exception {
+    /**
+     * Constructor.
+     * @param message the error message.
+     */
+    public UserNotFoundException(String message) {
+        super(message);
     }
 }

@@ -19,9 +19,16 @@ package com.fridaymastermix.user;
 
 import java.util.List;
 
+/**
+ * A class used to wrap message lists in JSON responses.
+ */
 public class UserWrapper {
     private List<User> users;
 
+    /**
+     * Constructor.
+     * @param users the user.
+     */
     public UserWrapper(List<User> users) {
         this.users = users;
     }

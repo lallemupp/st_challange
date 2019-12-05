@@ -20,9 +20,19 @@ package com.fridaymastermix.database;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 
+/**
+ * Factory for Jedis clients.
+ *
+ * Needed to enable dependency injection of Jedis.
+ */
 @Component
 public class RedisFactory {
 
+    /**
+     * Creates and returns a jedis client with default configuration (localhost:6379)
+     *
+     * @return A Jedis client.
+     */
     public Jedis redis() {
         return new Jedis();
     }

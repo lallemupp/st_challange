@@ -17,33 +17,23 @@
 
 package com.fridaymastermix.user;
 
-import java.util.List;
-
 /**
- * Interface for Data Access Objects that handles user data.
+ * Exception used to signal that the user already exists.
  */
-public interface UserDao {
+public class UserAlreadyExistsException extends Exception {
+    private String message;
 
     /**
-     * Adds a user to the data store.
+     * Constructor.
      *
-     * @param user the user to add.
-     * @throws UserAlreadyExistsException if the user already exists.
+     * @param message the error message.
      */
-    void add(User user) throws UserAlreadyExistsException;
+    public UserAlreadyExistsException(String message) {
+        this.message = message;
+    }
 
-    /**
-     * Returns a list of all users.
-     *
-     * @return the list of all users.
-     */
-    List<User> all();
-
-    /**
-     * Returns a user.
-     *
-     * @param user the name of the user.
-     * @return the user or {@link User#NONEXISTING} if the user does not exist.
-     */
-    User get(String user);
+    @Override
+    public String getMessage() {
+        return message;
+    }
 }

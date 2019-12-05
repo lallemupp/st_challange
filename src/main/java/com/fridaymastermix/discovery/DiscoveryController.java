@@ -19,7 +19,7 @@ package com.fridaymastermix.discovery;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.MediaType;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,16 +29,29 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Controller that handles discovery requests.
+ */
 @RestController
 public class DiscoveryController implements InitializingBean {
 
     private String discoveryJson = "";
 
-    @RequestMapping("/")
+    /**
+     * Handles discovery requests.
+     *
+     * @return the discovery json.
+     */
+    @RequestMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public String discovery() {
         return discoveryJson;
     }
 
+    /**
+     * Reads the discovery file and loads it into memory.
+     *
+     * @throws Exception if anything goes wrong while loading the discovery file.
+     */
     @Override
     public void afterPropertiesSet() throws Exception {
         var discoveryResource = new ClassPathResource("discovery.json", DiscoveryController.class);
