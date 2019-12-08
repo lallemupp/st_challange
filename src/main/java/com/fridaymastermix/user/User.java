@@ -30,19 +30,19 @@ public class User {
     public static User NONEXISTING = new User("NO", "USER");
 
     @NotBlank
-    private String userName;
+    private String user;
 
     @NotBlank
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
-    public User(String userName, String password) {
-        this.userName = userName;
+    public User(String user, String password) {
+        this.user = user;
         this.password = password;
     }
 
     public String toString() {
-        return String.format("%s:%s", userName, "*".repeat(password.length()));
+        return String.format("%s:%s", user, "*".repeat(password.length()));
     }
 
     @Override
@@ -54,7 +54,7 @@ public class User {
         User user = (User) o;
 
         return new EqualsBuilder()
-                .append(userName, user.userName)
+                .append(this.user, user.user)
                 .append(password, user.password)
                 .isEquals();
     }
@@ -62,13 +62,13 @@ public class User {
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
-                .append(userName)
+                .append(user)
                 .append(password)
                 .toHashCode();
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUser() {
+        return user;
     }
 
     public String getPassword() {

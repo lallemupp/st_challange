@@ -70,7 +70,7 @@ public class UserController {
         uriBuilder.path("/{id}");
 
         var headers = new HttpHeaders();
-        headers.setLocation(uriBuilder.build(user.getUserName()));
+        headers.setLocation(uriBuilder.build(user.getUser()));
 
         try {
             users.create(user);
@@ -78,7 +78,7 @@ public class UserController {
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             var status = HttpStatus.SEE_OTHER;
-            var message = String.format("User with user name %s does already exist. Try another user name", user.getUserName());
+            var message = String.format("User with user name %s does already exist. Try another user name", user.getUser());
 
             return new ResponseEntity<>(new ResponseBody(status.value(), message), headers, status);
         }

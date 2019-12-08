@@ -48,17 +48,17 @@ public class RedisUserDao implements UserDao {
     @Override
     public void add(User user) throws UserAlreadyExistsException {
         try (var redis = redisFactory.redis()) {
-            var userKey = String.format("%s:%s", USER_PREFIX, user.getUserName());
+            var userKey = String.format("%s:%s", USER_PREFIX, user.getUser());
 
             if (redis.exists(userKey)) {
-                var errorMessage = String.format("A user with nick %s already exist", user.getUserName());
+                var errorMessage = String.format("A user with nick %s already exist", user.getUser());
                 throw new UserAlreadyExistsException(errorMessage);
             }
 
-            redis.hmset(userKey, Map.of(USER_NICK_KEY, user.getUserName(), USER_PASSWORD_KEY, user.getPassword()));
+            redis.hmset(userKey, Map.of(USER_NICK_KEY, user.getUser(), USER_PASSWORD_KEY, user.getPassword()));
 
             var usersKey = String.format("%s:%s", USERS_PREFIX, "all");
-            redis.lpush(usersKey, user.getUserName());
+            redis.lpush(usersKey, user.getUser());
         }
     }
 
