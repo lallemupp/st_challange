@@ -17,8 +17,6 @@
 
 package com.fridaymastermix.database;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 
@@ -29,9 +27,6 @@ import redis.clients.jedis.Jedis;
  */
 @Component
 public class RedisFactory {
-
-    private String host;
-    private int port;
 
     /**
      * Creates and returns a jedis client with default configuration (localhost:6379)

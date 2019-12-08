@@ -54,23 +54,23 @@ public class RedisMessageDaoTest {
             "created", "1",
             "updated", "1");
 
-    private RedisMessageDao uut;
+    private RedisMessageDao messageDao;
     private Jedis redis;
     private RedisFactory factory;
 
     @Before
     public void setup() {
-        uut = new RedisMessageDao();
+        messageDao = new RedisMessageDao();
         redis = mock(Jedis.class);
         factory = mock(RedisFactory.class);
 
-        uut.redisFactory = factory;
+        messageDao.redisFactory = factory;
         when(factory.redis()).thenReturn(redis);
     }
 
     @After
     public void teardown() {
-        uut = null;
+        messageDao = null;
         redis = null;
         factory = null;
     }
@@ -78,7 +78,7 @@ public class RedisMessageDaoTest {
     @Test
     public void get() {
         when(redis.hgetAll("message:message_id")).thenReturn(MESSAGE_HASH);
-        var result = uut.get("message_id");
+        var result = messageDao.get("message_id");
         var expected = new Message("message_id", "this is a message", "lalle", 1, 1);
 
         assertEquals(expected, result);
@@ -89,7 +89,7 @@ public class RedisMessageDaoTest {
     public void getMessageDoesNotExist() {
         when(redis.hgetAll("message:message_id")).thenReturn(Map.of());
 
-        var result = uut.get("message_id");
+        var result = messageDao.get("message_id");
         var expected = Message.NONEXISTING;
 
         assertEquals(expected, result);
@@ -102,7 +102,7 @@ public class RedisMessageDaoTest {
                 "created", "1",
                 "id", "message_id"));
 
-        var result = uut.get("message_id");
+        var result = messageDao.get("message_id");
         var expected = Message.ERROR;
 
         assertEquals(expected, result);
@@ -116,7 +116,7 @@ public class RedisMessageDaoTest {
                 "created", "1",
                 "updated", "1"));
 
-        var result = uut.get("message_id");
+        var result = messageDao.get("message_id");
         var expected = Message.ERROR;
 
         assertEquals(expected, result);
@@ -129,7 +129,7 @@ public class RedisMessageDaoTest {
                 "message", "a message",
                 "updated", "1"));
 
-        var result = uut.get("message_id");
+        var result = messageDao.get("message_id");
         var expected = Message.ERROR;
 
         assertEquals(expected, result);
@@ -142,7 +142,7 @@ public class RedisMessageDaoTest {
                 "message", "a message",
                 "created", "1"));
 
-        var result = uut.get("message_id");
+        var result = messageDao.get("message_id");
         var expected = Message.ERROR;
 
         assertEquals(expected, result);
@@ -163,7 +163,7 @@ public class RedisMessageDaoTest {
 
         Message[] expected = {message, message, message};
 
-        var result = uut.messagesWrittenBy("lalle");
+        var result = messageDao.messagesWrittenBy("lalle");
         assertThat(result, hasItems(expected));
         verify(redis, times(3)).hgetAll(any(String.class));
     }
@@ -172,7 +172,7 @@ public class RedisMessageDaoTest {
     public void messagesWithMissingHash() {
         when(redis.lrange("user:lalle:mesasges", 0, -1)).thenReturn(List.of());
         var expected = 0;
-        var result = uut.messagesWrittenBy("lalle");
+        var result = messageDao.messagesWrittenBy("lalle");
         assertEquals(expected, result.size());
     }
 
@@ -190,7 +190,7 @@ public class RedisMessageDaoTest {
         var message = new Message("message_id", "this is a message", "lalle", 1, 1);
         Message[] expected = {message, message, message};
 
-        var result = uut.all();
+        var result = messageDao.all();
         assertThat(result, hasItems(expected));
     }
 
@@ -199,14 +199,14 @@ public class RedisMessageDaoTest {
         when(redis.lrange("messages:all", 0, -1)).thenReturn(List.of());
 
         var expected = 0;
-        var result = uut.all();
+        var result = messageDao.all();
 
         assertEquals(expected, result.size());
     }
 
     @Test
     public void add() {
-        var result = uut.add( "this is a message", "lalle");
+        var result = messageDao.add( "this is a message", "lalle");
         assertNotNull(result);
 
         verify(redis).hset(anyString(), anyMap());
@@ -218,7 +218,7 @@ public class RedisMessageDaoTest {
     public void update() throws MessageNotFoundException {
         when(redis.hgetAll("message:message_id")).thenReturn(MESSAGE_HASH);
 
-        uut.update("message_id", "this is a new message");
+        messageDao.update("message_id", "this is a new message");
         verify(redis).hmset("message:message_id", Map.of("message", "this is a new message"));
         verify(redis).hmset(eq("message:message_id"), argThat(new UpdatedMapMatcher()));
     }
@@ -227,7 +227,7 @@ public class RedisMessageDaoTest {
     public void updateItemNotFound() throws MessageNotFoundException {
         when(redis.hgetAll("user:lalle:message_id")).thenReturn(Map.of());
 
-        uut.update("user:lalle:message_id", "this is a message");
+        messageDao.update("user:lalle:message_id", "this is a message");
         fail("MessageNotFoundException was not thrown");
     }
 
@@ -237,7 +237,7 @@ public class RedisMessageDaoTest {
         when(redis.lrem("user:lalle:messages", 1, "message_id")).thenReturn(1L);
         when(redis.lrem("users:all", 1, "message_id")).thenReturn(1L);
 
-        var result = uut.delete("message_id", "lalle");
+        var result = messageDao.delete("message_id", "lalle");
 
         assertTrue(result);
     }
@@ -248,7 +248,7 @@ public class RedisMessageDaoTest {
         when(redis.lrem("user:lalle:messages", 1, "message_id")).thenReturn(0L);
         when(redis.lrem("users:all", 1, "message_id")).thenReturn(0L);
 
-        var result = uut.delete("message_id", "lalle");
+        var result = messageDao.delete("message_id", "lalle");
 
         assertTrue(result);
     }
@@ -259,7 +259,7 @@ public class RedisMessageDaoTest {
         when(redis.lrem("user:lalle:messages", 1, "message_id")).thenReturn(0L);
         when(redis.lrem("users:all", 1, "message_id")).thenReturn(0L);
 
-        var result = uut.delete("message_id", "lalle");
+        var result = messageDao.delete("message_id", "lalle");
 
         assertFalse(result);
     }

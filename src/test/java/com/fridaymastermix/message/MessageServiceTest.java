@@ -24,47 +24,51 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class MessageServiceTest {
 
-    private MessageService uut;
+    private MessageService messageService;
     private MessageDao messageDao;
     private UserDao userDao;
 
     @Before
     public void setup() {
-        uut = new MessageService();
+        messageService = new MessageService();
         messageDao = mock(MessageDao.class);
         userDao = mock(UserDao.class);
 
-        uut.messageDao = messageDao;
-        uut.userDao = userDao;
+        messageService.messageDao = messageDao;
+        messageService.userDao = userDao;
     }
 
     @After
     public void teardown() {
-        uut = null;
+        messageService = null;
         messageDao = null;
     }
 
     @Test
     public void describe() {
-        uut.describe("bestOfIds");
+        messageService.describe("bestOfIds");
         verify(messageDao).get("bestOfIds");
     }
 
     @Test
     public void describeNoMatch() {
-        uut.describe("bestOfIds");
+        messageService.describe("bestOfIds");
         when(messageDao.get("bestOfIds")).thenReturn(Message.NONEXISTING);
         verify(messageDao).get("bestOfIds");
     }
 
     @Test
     public void messagesWrittenBy() {
-        uut.writtenBy("lalle");
+        messageService.writtenBy("lalle");
         verify(messageDao).messagesWrittenBy("lalle");
     }
 
@@ -72,7 +76,7 @@ public class MessageServiceTest {
     public void messagesWrittenByNoMatch() {
         when(messageDao.messagesWrittenBy("lalle")).thenReturn(List.of());
 
-        var result = uut.writtenBy("lalle");
+        var result = messageService.writtenBy("lalle");
         var expected = List.of();
 
         assertEquals(expected, result);
@@ -87,14 +91,15 @@ public class MessageServiceTest {
 
     @Test
     public void create() throws UserNotFoundException {
-        uut.create("this is a message", "lalle");
+        messageService.create("this is a message", "lalle");
+        verify(userDao).get("lalle");
         verify(messageDao).add("this is a message", "lalle");
     }
 
     @Test
     public void update() throws MessageNotFoundException {
         var message = new Message("an id", "this is a test", "lalle", 0, 1);
-        uut.update(message);
+        messageService.update(message);
         verify(messageDao).update(message.getId(), message.getMessage());
     }
 
@@ -103,7 +108,7 @@ public class MessageServiceTest {
         var message = new Message("an id", "this is a test", "lalle", 0, 1);
         doThrow(new MessageNotFoundException("DANGER !!!!!! TERROR HORROR")).when(messageDao).update(message.getId(), message.getMessage());
 
-        uut.update(message);
+        messageService.update(message);
         fail("MessageNotFoundException was not thrown");
     }
 }

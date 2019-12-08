@@ -81,7 +81,7 @@ public class RedisUserDao implements UserDao {
         try (var redis = redisFactory.redis()) {
             var hash = redis.hgetAll(String.format("%s:%s", USER_PREFIX, user));
             if (!hash.isEmpty()) {
-                return new User(hash.get("nick"), hash.get("password"));
+                return new User(hash.get(USER_NICK_KEY), hash.get(USER_PASSWORD_KEY));
             } else {
                 return User.NONEXISTING;
             }

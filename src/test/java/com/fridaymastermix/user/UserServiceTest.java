@@ -17,7 +17,6 @@
 
 package com.fridaymastermix.user;
 
-import com.fridaymastermix.message.MessageService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,31 +26,31 @@ import static org.mockito.Mockito.verify;
 
 public class UserServiceTest {
 
-    private UserService uut;
+    private UserService userService;
     private UserDao userDao;
 
     @Before
     public void setup() {
-        uut = new UserService();
+        userService = new UserService();
         userDao = mock(UserDao.class);
-        uut.users = userDao;
+        userService.users = userDao;
     }
 
     @After
     public void teardown() {
-        uut = null;
+        userService = null;
         userDao = null;
     }
 
     @Test
     public void all() {
-        uut.all();
+        userService.all();
         verify(userDao).all();
     }
 
     @Test
     public void describe() {
-        uut.describe("lalle");
+        userService.describe("lalle");
         verify(userDao).get("lalle");
     }
 }
