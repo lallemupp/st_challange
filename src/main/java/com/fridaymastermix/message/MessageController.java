@@ -45,6 +45,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "messages", produces = MediaType.APPLICATION_JSON_VALUE)
+@SuppressWarnings("UnusedReturnValue")
 public class MessageController {
 
     @Autowired

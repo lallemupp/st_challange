@@ -55,7 +55,7 @@ public class DiscoveryController implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         var discoveryResource = new ClassPathResource("discovery.json", DiscoveryController.class);
-        try (var inputStream = discoveryResource.getInputStream(); var outputStream = new ByteArrayOutputStream()) {
+        try (var inputStream = discoveryResource.getInputStream()) {
             try (var inputReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
                 discoveryJson = FileCopyUtils.copyToString(inputReader);
             }

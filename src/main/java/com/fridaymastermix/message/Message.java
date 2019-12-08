@@ -42,7 +42,6 @@ public class Message {
 
     @NotBlank
     private String message;
-
     private String id;
     private String createdBy;
     private long created;
