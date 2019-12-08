@@ -12,7 +12,7 @@ build:
 install-deps:
 	docker pull redis:5.0.7
 
-docker:
+docker: build
 	docker build -t fridaymastermix/st_challange .
 
 run: install-deps build docker
