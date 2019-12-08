@@ -8,6 +8,8 @@ the unfortunate effect that a user can access, modify and delete any message / u
 This also leads to making a user request parameter mandatory for much of the message API.
 The user would be read from the principal that would be provided after the request had been authenticated.
 
+The domain objects are kind of uninteresting but they could easily be expanded if needed.
+
 Another limitation is that the API is not HATEOAS.
 
 ## How to Build
